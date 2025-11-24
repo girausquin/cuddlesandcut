@@ -1,0 +1,201 @@
+// src/app/qr/qr.tsx
+"use client";
+
+import { useEffect, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
+
+// Si tu Navbar está en el RootLayout, aparecerá automáticamente aquí.
+// Si no, podrías importar y renderizar <Navbar /> arriba de <main />.
+
+// 👉 Opcional: marca esta página como no indexable desde el App Router (layout por ruta).
+export const metadata = {
+  robots: { index: false, follow: false },
+  title: "Cuddles & Cuts — Quick Connect",
+  description:
+    "Scan & connect: WhatsApp, Instagram, Facebook. Premium In-Home Grooming in Round Rock & Surroundings.",
+};
+
+// ====== Config ======
+const WHATSAPP_NUMBER =
+  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "+1 (737) 777-0000";
+const IG_URL =
+  process.env.NEXT_PUBLIC_IG_URL ?? "https://instagram.com/cuddlesandcuts";
+const FB_URL =
+  process.env.NEXT_PUBLIC_FB_URL ?? "https://facebook.com/cuddlesandcuts";
+
+// Sanitiza para wa.me
+const digits = (s: string) => (s ?? "").replace(/\D+/g, "");
+
+// ====== Brand Icons (SVGs puros, “apple-like”) ======
+function IGIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z" fill="currentColor" opacity="0.12"/>
+      <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" strokeWidth="1.6" fill="none"/>
+      <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.6" fill="none"/>
+      <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/>
+    </svg>
+  );
+}
+
+function FBIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path d="M22 12a10 10 0 1 0-11.57 9.87v-6.98H7.9V12h2.53V9.8c0-2.5 1.48-3.88 3.75-3.88 1.09 0 2.23.2 2.23.2v2.45h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.98A10 10 0 0 0 22 12Z" fill="currentColor"/>
+    </svg>
+  );
+}
+
+function WAIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path d="M20.52 3.48A11.93 11.93 0 0 0 12.04 0C5.5.02.2 5.31.22 11.83c.01 2.09.54 4.11 1.58 5.92L0 24l6.4-1.75a12 12 0 0 0 5.62 1.44h.05c6.53-.03 11.81-5.32 11.79-11.84a11.93 11.93 0 0 0-3.34-8.37Zm-8.47 18.5h-.04a9.9 9.9 0 0 1-5.05-1.38l-.36-.21-3.79 1.03 1.02-3.69-.24-.38a9.8 9.8 0 0 1-1.52-5.25C2.04 6.42 6.5 2 12 2a9.9 9.9 0 0 1 7 2.9 9.9 9.9 0 0 1 2.95 7.05c.02 5.5-4.44 9.98-9.9 10.03ZM17.5 14.2c-.24-.12-1.41-.69-1.63-.77-.22-.08-.38-.12-.54.12-.16.24-.62.77-.76.93-.14.16-.28.18-.52.06-.24-.12-1-.37-1.9-1.17-.7-.62-1.17-1.38-1.31-1.62-.14-.24-.02-.37.1-.49.1-.1.24-.26.36-.4.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.29-.73-1.77-.19-.47-.39-.41-.54-.42h-.46c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2 .02 1.18.86 2.33.98 2.5.12.16 1.7 2.6 4.13 3.53.58.22 1.03.35 1.38.45.58.18 1.1.16 1.52.1.46-.07 1.41-.57 1.6-1.11.2-.54.2-1 .14-1.1-.06-.1-.22-.16-.46-.28Z" fill="currentColor"/>
+    </svg>
+  );
+}
+
+// ====== UI ======
+export default function QRHub() {
+  const searchParams = useSearchParams();
+
+  const waHref = useMemo(() => {
+    const n = digits(WHATSAPP_NUMBER);
+    const text = encodeURIComponent(
+      "Hi! I'd like to book a grooming appointment in Round Rock & Surroundings. Can you help me schedule?"
+    );
+    return `https://wa.me/${n}?text=${text}`;
+  }, []);
+
+  const igHref = `${IG_URL}?utm_source=qr-card&utm_medium=offline&utm_campaign=business-card`;
+  const fbHref = `${FB_URL}?utm_source=qr-card&utm_medium=offline&utm_campaign=business-card`;
+
+  // Salto directo /qr?to=wa|ig|fb
+  useEffect(() => {
+    const to = (searchParams.get("to") || "").toLowerCase();
+    const map: Record<string, string> = { wa: waHref, ig: igHref, fb: fbHref };
+    if (map[to]) window.location.replace(map[to]);
+  }, [searchParams, waHref, igHref, fbHref]);
+
+  // Animaciones
+  const fade = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } };
+
+  return (
+    <main className="relative min-h-[88vh] w-full overflow-hidden">
+      {/* Fondo “premium” */}
+      <div className="absolute inset-0 bg-gradient-to-b from-emerald-50 via-white to-pink-50" />
+      <div className="absolute -top-24 -left-24 h-96 w-96 rounded-full blur-3xl opacity-40 bg-teal-200/60" />
+      <div className="absolute top-24 -right-16 h-80 w-80 rounded-full blur-3xl opacity-40 bg-pink-200/60" />
+
+      {/* Contenido */}
+      <section className="relative mx-auto max-w-5xl px-6 pt-14 pb-16">
+        {/* Hero */}
+        <motion.div
+          initial="hidden"
+          animate="show"
+          transition={{ staggerChildren: 0.05 }}
+          className="text-center"
+        >
+          <motion.h1
+            variants={fade}
+            className="text-4xl md:text-5xl font-extrabold tracking-tight"
+          >
+            Cuddles & Cuts
+          </motion.h1>
+          <motion.p
+            variants={fade}
+            className="mt-3 text-base md:text-lg text-gray-600"
+          >
+            Love in one hand, style in the other. ✂️💚
+          </motion.p>
+          <motion.p
+            variants={fade}
+            className="mt-2 text-sm text-gray-500"
+          >
+            Scan → pick your favorite channel → book in seconds.
+          </motion.p>
+        </motion.div>
+
+        {/* Cards “apple-like” */}
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <ContactCard
+            label="WhatsApp"
+            href={waHref}
+            Icon={WAIcon}
+            accent="from-emerald-400 to-teal-500"
+          />
+          <ContactCard
+            label="Instagram"
+            href={igHref}
+            Icon={IGIcon}
+            accent="from-pink-400 to-fuchsia-500"
+          />
+          <ContactCard
+            label="Facebook"
+            href={fbHref}
+            Icon={FBIcon}
+            accent="from-blue-500 to-indigo-600"
+          />
+        </div>
+
+        {/* Tip */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mt-8 text-center text-xs text-gray-500"
+        >
+          Tip: atajos directos — <code>/qr?to=wa</code>, <code>/qr?to=ig</code>,{" "}
+          <code>/qr?to=fb</code>
+        </motion.div>
+      </section>
+    </main>
+  );
+}
+
+// ====== Card Component ======
+function ContactCard({
+  label,
+  href,
+  Icon,
+  accent,
+}: {
+  label: string;
+  href: string;
+  Icon: (p: React.SVGProps<SVGSVGElement>) => JSX.Element;
+  accent: string; // tailwind gradient suffix
+}) {
+  return (
+    <motion.a
+      href={href}
+      initial={{ opacity: 0, y: 14, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.995 }}
+      className="group relative block rounded-3xl p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+    >
+      {/* Borde degradado */}
+      <div className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${accent} opacity-90`} />
+      {/* Interior glass */}
+      <div className="relative rounded-3xl bg-white/70 backdrop-blur-xl p-6 h-full shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
+        <div className="flex flex-col items-center justify-center py-8">
+          <div className="relative">
+            {/* Aura */}
+            <div className="absolute inset-0 blur-2xl rounded-full opacity-50" />
+            {/* Icono grande */}
+            <Icon className="h-24 w-24 md:h-28 md:w-28 text-gray-900" />
+          </div>
+          <div className="mt-6 text-xl md:text-2xl font-semibold">{label}</div>
+          <div className="mt-1 text-xs text-gray-500">
+            Tap to open {label}
+          </div>
+        </div>
+      </div>
+
+      {/* Glow al hover */}
+      <div
+        className={`pointer-events-none absolute -inset-1 rounded-3xl bg-gradient-to-br ${accent} opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-40`}
+      />
+    </motion.a>
+  );
+}

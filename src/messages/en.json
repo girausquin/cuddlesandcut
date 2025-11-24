@@ -1,0 +1,13 @@
+{
+  "navbar": {
+    "services": "Services",
+    "about": "About Us",
+    "gallery": "Gallery",
+    "contact": "Contact",
+    "faq": "FAQ",
+    "bookNow": "Book Now",
+    "language": "Language",
+    "english": "English",
+    "spanish": "Spanish"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "navbar": {
+    "services": "Servicios",
+    "about": "Sobre Nosotros",
+    "gallery": "Galería",
+    "contact": "Contacto",
+    "faq": "Preguntas Frecuentes",
+    "bookNow": "Agendar Cita",
+    "language": "Idioma",
+    "english": "Inglés",
+    "spanish": "Español"
+  }
+}
